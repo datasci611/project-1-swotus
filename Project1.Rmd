@@ -1,0 +1,195 @@
+---
+title: "Project 1"
+author: "Sarah Wotus"
+date: "9/24/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(knitr)
+```
+
+#1. Weight versus age of chicks on different diets (chickweight)
+
+```{r, eval=FALSE}
+?ChickWeight
+```
+
+
+```{r}
+chicksummary <- ChickWeight %>%
+  mutate(timecut = cut_width(Time, 5)) %>% 
+  group_by(timecut) %>% 
+  summarise(meanweight = mean(weight))
+
+ChickWeight %>% 
+  arrange(Time) %>% 
+  mutate(timecut = cut_width(Time, 5)) %>% 
+  ggplot(aes(timecut, weight, fill = factor(Diet))) +
+    geom_boxplot() +
+  xlab('Days Since Birth') +
+  ylab('Weight (gm)') +
+  labs(title='Effect of Diet on Early Growth of Chicks') +
+  geom_hline(data = chicksummary, aes(yintercept = meanweight), linetype = "dashed") +
+  #annotate("text", x = 1, y = 60, label = "Days -2.5 to 2.5", size = 3) +
+  annotate("text", x = 0.92, y = 73, label = "Days 2.5 to 7.5", size = 3) +
+  annotate("text", x = 0.95, y = 115, label = "Days 7.5 to 12.5", size = 3) +
+  annotate("text", x = 1, y = 163, label = "Days 12.5 to 17.5", size = 3) +
+  annotate("text", x = 1, y = 213, label = "Days 17.5 to 22.5", size = 3)
+```
+
+
+##Results
+This figure was derived from the `ChickWeight` dataset in R, which was originally derived in Crowder, M. and Hand, D. (1990), *Analysis of Repeated Measures*, Chapman and Hall (example 5.3). The data represents an experiment on the effect of diet on early growth of chicks - there are 578 rows of data and four columns representing weight, days since birth, the chick's unique identifier, and diet (1 of 4 options). Body weights were measured at birth and every second day.
+
+The boxplots represent the range of weights for chicks in each diet group, while the dashed lines represent the average weight of all chicks for each time period. All chicks begin around 50 grams. From day 2.5 to 7.5, chicks on Diet 4 are slightly above the average weight while chicks on Diet 1 are slightly below average. This trend continues to the next time period, except now Diet 3 is also slightly above average while Diet 2 is slightly blow average. As the days continue, the average weight for chicks in Diet 3 continues to be greatly above average, and chicks in Diet 1 greatly below average, with Diet 2 and 4 remaining around the average. For the final weigh-in period, the mean weight for all chicks is slightly above 200 gm. Chicks in diet 3 have a mean weight around 260 gm, and chicks in diet 1 have a mean weight around 155 gm. It can be assumed that diet 3 consists of nutrients that encourage accelerated weight growth while diet 1 lacks the nutrients to keep chicks on the proper weight growth track.
+
+For next steps, it would be interesting to see if the increased weight growth in chicks on diet 3 compared to the remaining chicks was statistically significant. If this was the case, farmers wishing to increase the weight of their chicks could pursue feeding them this diet.
+
+
+#2. New York Air Quality Measurements (airquality)
+
+```{r, eval=FALSE}
+?airquality
+```
+
+
+```{r, eval = FALSE}
+#exploring the data:
+ggplot(data = airquality) +
+  geom_histogram(mapping = aes(x = Ozone), binwidth = 10)
+#skewed left
+
+ggplot(data = airquality) +
+  geom_histogram(mapping = aes(x = Temp), binwidth = 5)
+#skewed right
+```
+
+
+```{r, warning=FALSE}
+#final plot
+airquality %>% 
+  arrange(Temp) %>%
+  mutate(windbin = cut_width(Wind, 8)) %>% #don't really need to include color
+  ggplot(mapping = aes(x = Temp, y = Ozone)) +
+   geom_point(aes(color = windbin)) +
+  geom_smooth(se = FALSE) +
+  xlab('Temperature (degrees Farenheit)') +
+  ylab('Ozone (ppb)') +
+  labs(title = 'Effects of Temperature on Ozone levels in New York,\nMay to September 1973', color = 'Wind (mph)') +
+  annotate("rect", xmin = 80, xmax = 95, ymin = 113, ymax = 172,
+  alpha = .2)
+```
+
+
+##Results
+This figure was derived from the `airquality` dataset in R. Data was obtained from the New York State Department of Conservation (ozone data) and the National Weather service (meterological data). It represents daily air quality measurements in New York from May to September in 1973; there are 154 observations and 6 variables - ozone, Solar R, wind, temperature, month, and day of month.
+
+In the above figure, temperature and ozone appear to have an s-shaped relationship. From 55 to 75 degrees Farenheit, mean ozone in parts per billion remains relatively the same. Between 75 and 90 degrees ozone steadily increases as temperature increases, but it appears to level off again around 90 to 95 degrees farenheit. At this higher temperature, there are a few points that do not follow the general curve (indicated in the shaded box). In an attempt to understand the reason for increased ozone during these particular daily readings, points were colored according to the average wind speed in miles per hour that day. It appears that there may be a relationship between low wind speeds and increased mean ozone readings that warrants further investigation.
+
+As a next step, it would be interesting to look at data for other states and see if they exhibit a similar relationship between ozone and temperature. Certain variables such as number of cars, powerplants, and other pollution sources could alter the relationship between temperature and ozone.
+
+
+#3. The Number of Breaks in Yarn during Weaving (warpbreaks)
+
+```{r}
+?warpbreaks
+```
+
+```{r, eval=FALSE}
+#exploring the data
+ggplot(data = warpbreaks) +
+  geom_histogram(mapping = aes(x = breaks), binwidth = 5)
+```
+
+```{r, eval=FALSE}
+#exploring plot options:
+warpbreaks %>% 
+  mutate(type = paste(wool, tension)) %>% 
+  mutate(breakscat = cut_width(breaks, 10)) %>% 
+  ggplot() +
+  geom_bar(mapping = aes(x = breakscat, fill = type), position = "fill") +
+  xlab('Number of Breaks per Loom') +
+  ylab('Proportion') +
+  labs(title = "Is Type of Warp Associated with the Number of Breaks\nDuring Weaving?", fill ="Type of\nWarp")
+```
+
+```{r}
+meanbreaks <- mean(warpbreaks$breaks)
+
+typeA <- warpbreaks %>% filter(wool == "A")
+typeB <- warpbreaks %>% filter(wool == "B")
+
+typeBH <- warpbreaks %>% filter(wool == "B" & tension == "H")
+typeAL <- warpbreaks %>% filter(wool == "A" & tension == "L")
+meanA <- mean(typeA$breaks)
+meanB <- mean(typeB$breaks)
+meanBH <- mean(typeBH$breaks)
+meanAL <- mean(typeAL$breaks)
+```
+
+```{r}
+#FINAL PLOT:
+breaks.summary <- warpbreaks %>% 
+  group_by(wool) %>% 
+  summarise(mean.breaks = mean(breaks))
+
+ggplot(warpbreaks, aes(x = breaks, fill = tension), position = "identity") + 
+  geom_histogram(binwidth = 10) + 
+  facet_wrap(wool ~ .) +
+  geom_vline(data = breaks.summary, aes(xintercept = mean.breaks), color = "red") +
+  labs(title = "Is Type of Warp Associated with the Number of Breaks\nDuring Weaving") +
+  xlab('Number of Breaks per Loom in Wool Type A and Type B') +
+  ylab('Count')
+```
+  
+
+##Results
+This figure is derived from the `warbreaks` dataset in R; the original source is Tippett, L. H. C. (1950) *Technological Applications of Statistics*. Wiley. Page 106. The data has 54 observations recording the number of warp breaks per loom - there are 6 types of warp (AL, AM, AH, BL, BM, BH) and 9 looms recorded per warp.
+
+The average number of breaks per loom is `r meanbreaks`. The average number of breaks for wool type A is `r meanA` and the average number of breaks for wool type B is slightly lower at `r meanB`. Looking at the figure, warps with high tension (H) tend to have less breaks than those with low tension (L). Combining these two facts, we can see from the data that warp type BH has the least average number of breaks at `r meanBH` and tyle AL has the highest average number of breaks at `r meanAL`. 
+
+As a next step, it would be interesting to look at the interaction between tension and wool type. Is the influence of wool and tension on breaks per loom additive (no interaction) or not?
+
+
+
+#4. Swiss Fertility and Socioeconomic Indicators (1888) Data (swiss)
+
+```{r, eval=FALSE}
+?swiss
+```
+
+```{r}
+#Producing the plot
+swisscat <- swiss %>% 
+  mutate(educationcut = cut_width(Education, 15), agricut = cut_width(Agriculture, 20))
+
+ggplot(data = swisscat, mapping = aes(x = Education, y = Fertility)) +
+  geom_point(mapping = aes(colour = agricut)) +
+  geom_smooth(se = FALSE) +
+  xlab('Education Beyond Primary school for Draftees (%)') +
+  ylab('Standardized Fertility Measure (lg)') +
+  labs(title = "Swiss Socioeconomic Indicators and their Relation to\nFertility Levels in 47 Provinces around year 1888", colour = "% of Males\nin Agriculture") +
+ annotate("text", x = 50, y = 40, label = "V. De Geneve", size = 3)
+  
+```
+
+
+```{r, eval=FALSE}
+lowfert <- swiss %>% filter(Fertility < 40)
+(lowfert) #V. De Geneve
+```
+
+##Results
+The figure is derived from the dataset `swiss` in R. The original source of the data is indicated as "Data used by permission of Francie van de Walle. Office of Popuation Research, Princeton University, 1976. Unpublished data assembled under NICHD contract number No 1-HD-O-2077". The data represents a standardized fertility measure and socio-economic indicators for each of the 47 French-speaking province of Switerzland around year 1888.
+
+This data represents a year in Switzerland while it's going through the demographic transition, aka decreasing fertility (and with it a decrease in infant mortality) as the country becomes more developed. As seen above, there is a negative relationship between education beyond primary schools and fertility - high education within a province is associated with lower fertility rates. To add another layer to the graph, the percentage of males involved in agriculture also is lower as education rates are higher. This image reflects the idea that as education increases, society becomes more advanced, and as it advances there is livelihood diversification (away from agriculture) and falling rates of fertility. The point representing province V. De Geneve has the higest rate of education, lowest percentage of males in agriculture, and also the lowest fertility.
+
+As a next step, it would be interesting to look into provinces individually, especially V. De Geneve, and data spanning several years. Since the data above is for different provinces at the same time, other factors specific to each province could be influencing rates of agriculture, fertility, and education, for example, there could be policies concerning family planning or amount of land that is required to be farmed. Looking into just V. De Geneve could eliminate some confounding factors to the relationship between education, agriculture and fertility.
+
